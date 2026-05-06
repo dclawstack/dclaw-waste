@@ -1,0 +1,5 @@
+apiVersion: v2
+name: dclaw-waste
+description: Helm chart for DClaw Waste
+version: 1.0.0
+appVersion: "1.0.0"
