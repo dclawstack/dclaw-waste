@@ -1,3 +1,5 @@
+import { REGISTER_URL } from "@/lib/links";
+
 const plans = [
   {
     name: "Starter",
@@ -96,7 +98,7 @@ export default function Pricing() {
                 ))}
               </ul>
               <a
-                href="/register"
+                href={p.cta === "Contact Sales" ? "mailto:sales@dclawwaste.com" : REGISTER_URL}
                 className={`text-center font-semibold py-3 rounded-full transition-all ${
                   p.featured
                     ? "bg-white text-brand-800 hover:bg-brand-50"

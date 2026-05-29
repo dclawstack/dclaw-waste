@@ -1,3 +1,5 @@
+import { LOGIN_URL, REGISTER_URL } from "@/lib/links";
+
 export default function Nav() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 backdrop-blur-lg border-b border-white/10">
@@ -24,10 +26,10 @@ export default function Nav() {
 
       {/* CTA */}
       <div className="flex items-center gap-3">
-        <a href="/login" className="hidden md:block text-white/70 hover:text-white text-sm font-medium transition-colors">
+        <a href={LOGIN_URL} className="hidden md:block text-white/70 hover:text-white text-sm font-medium transition-colors">
           Sign in
         </a>
-        <a href="/register"
+        <a href={REGISTER_URL}
           className="bg-white text-brand-800 font-semibold text-sm px-4 py-2 rounded-full hover:bg-brand-50 transition-colors">
           Start Free Trial
         </a>

@@ -1,3 +1,5 @@
+import { LOGIN_URL, REGISTER_URL } from "@/lib/links";
+
 export default function CTA() {
   return (
     <section className="py-24 px-6 bg-white">
@@ -16,11 +18,11 @@ export default function CTA() {
               Set up takes 60 seconds.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a href="/register"
+              <a href={REGISTER_URL}
                 className="bg-white text-brand-800 font-bold text-base px-8 py-4 rounded-full hover:bg-brand-50 transition-all hover:scale-105 shadow-2xl">
                 Start Your Free Trial
               </a>
-              <a href="/login"
+              <a href={LOGIN_URL}
                 className="glass text-white font-semibold text-base px-8 py-4 rounded-full hover:bg-white/15 transition-all">
                 Sign in to dashboard →
               </a>
