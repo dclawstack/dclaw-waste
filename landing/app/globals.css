@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand:      #7660A8;
+  --brand-dark: #4A3878;
+  --brand-soft: #F1EEF8;
+  --ink:        #0F0F12;
+  --gray-600:   #5A5A66;
+  --gray-400:   #A3A3AC;
+  --gray-100:   #F2F2F4;
+  --success:    #2E8B57;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  font-family: 'Poppins', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: #ffffff;
+  color: var(--ink);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #7660A8 0%, #9384BD 50%, #2E8B57 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass card */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Animated gradient bg */
+.hero-bg {
+  background: linear-gradient(135deg, #2D1B69 0%, #4A3878 30%, #1a472a 70%, #2D1B69 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Feature card hover */
+.feature-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.feature-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(118, 96, 168, 0.18);
+}
+
+/* Pill badge */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pill-brand {
+  background: rgba(118, 96, 168, 0.12);
+  color: var(--brand);
+}
+
+.pill-green {
+  background: rgba(46, 139, 87, 0.1);
+  color: var(--success);
+}
