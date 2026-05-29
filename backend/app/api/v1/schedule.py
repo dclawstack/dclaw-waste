@@ -1,6 +1,7 @@
 import logging
 from datetime import date, datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel as _PydanticBase
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -84,3 +85,23 @@ async def delete_job(job_id: str, db: AsyncSession = Depends(get_db)):
     if not job:
         raise HTTPException(status_code=404, detail="Collection job not found")
     await repo.delete(job)
+
+
+# ── Route optimizer ──────────────────────────────────────────────────────────
+
+class StopInput(_PydanticBase):
+    job_id: str
+    lat: float
+    lng: float
+
+
+class RouteResult(_PydanticBase):
+    ordered_job_ids: list[str]
+    stop_count: int
+
+
+@router.post("/optimize-route", response_model=RouteResult)
+async def optimize_route(stops: list[StopInput]):
+    from app.services.route_optimizer import Stop, optimize_route as _opt
+    result = _opt([Stop(s.job_id, s.lat, s.lng) for s in stops])
+    return RouteResult(ordered_job_ids=result, stop_count=len(result))

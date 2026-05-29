@@ -1,7 +1,10 @@
+import csv
+import io
 import logging
 import uuid
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -60,6 +63,23 @@ async def create_lease(payload: LeaseContractCreate, db: AsyncSession = Depends(
     await repo.add_event(delivery)
     logger.info("Created lease contract %s for %s", contract.id, contract.customer_name)
     return contract
+
+
+@router.get("/export/csv")
+async def export_leases_csv(db: AsyncSession = Depends(get_db)):
+    repo = LeaseRepository(db)
+    items, _ = await repo.list_filtered(limit=10000, offset=0)
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["id","equipment_id","customer_name","customer_email","service_address",
+                     "start_date","end_date","monthly_rate","billing_cycle","status","auto_renew"])
+    for c in items:
+        writer.writerow([c.id, c.equipment_id, c.customer_name, c.customer_email,
+                         c.service_address, c.start_date, c.end_date, c.monthly_rate,
+                         c.billing_cycle, c.status, c.auto_renew])
+    output.seek(0)
+    return StreamingResponse(iter([output.getvalue()]), media_type="text/csv",
+                             headers={"Content-Disposition": "attachment; filename=leases.csv"})
 
 
 @router.get("/{contract_id}", response_model=LeaseContractRead)

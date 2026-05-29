@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { listLeases, LeaseContract, ContractStatus } from "@/lib/api"
-import { Plus, AlertTriangle, ChevronRight } from "lucide-react"
+import { listLeases, LeaseContract, ContractStatus, downloadCsv } from "@/lib/api"
+import { Plus, AlertTriangle, ChevronRight, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const STATUS_STYLE: Record<ContractStatus, { bg: string; color: string }> = {
@@ -46,11 +46,16 @@ export default function LeasesPage() {
           <p className="dk-eyebrow mb-1">Contracts</p>
           <h1 className="dk-h4">Leases <span style={{ color: "var(--dk-fg-2)", fontWeight: 400 }}>({total})</span></h1>
         </div>
-        <Link href="/leases/new">
-          <Button style={{ background: "var(--dk-brand)", color: "white", borderRadius: "var(--dk-radius-pill)" }}>
-            <Plus size={16} className="mr-1" /> New Lease
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <button onClick={() => downloadCsv("/api/v1/leases/export/csv", "leases.csv")} className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm" style={{ background: "var(--dk-gray-100)", color: "var(--dk-fg-1)" }}>
+            <Download size={14} /> CSV
+          </button>
+          <Link href="/leases/new">
+            <Button style={{ background: "var(--dk-brand)", color: "white", borderRadius: "var(--dk-radius-pill)" }}>
+              <Plus size={16} className="mr-1" /> New Lease
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}

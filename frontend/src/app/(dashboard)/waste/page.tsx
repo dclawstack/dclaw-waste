@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { listWasteRecords, createWasteRecord, getWasteSummary, listSites, deleteWasteRecord, WasteRecord, WasteSummary, Site, WasteType, DiversionMethod } from "@/lib/api"
-import { Plus, Trash2, AlertTriangle } from "lucide-react"
+import { listWasteRecords, createWasteRecord, getWasteSummary, listSites, deleteWasteRecord, downloadCsv, WasteRecord, WasteSummary, Site, WasteType, DiversionMethod } from "@/lib/api"
+import { Plus, Trash2, AlertTriangle, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -67,7 +67,12 @@ export default function WastePage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div><p className="dk-eyebrow mb-1">Tracking</p><h1 className="dk-h4">Waste Log <span style={{ color: "var(--dk-fg-2)", fontWeight: 400 }}>({total})</span></h1></div>
-        <Button onClick={() => setShowForm(true)} style={{ background: "var(--dk-brand)", color: "white", borderRadius: "var(--dk-radius-pill)" }}><Plus size={16} className="mr-1" /> Log Waste</Button>
+        <div className="flex gap-2">
+          <button onClick={() => downloadCsv("/api/v1/waste/export/csv", "waste_records.csv")} className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm" style={{ background: "var(--dk-gray-100)", color: "var(--dk-fg-1)" }}>
+            <Download size={14} /> CSV
+          </button>
+          <Button onClick={() => setShowForm(true)} style={{ background: "var(--dk-brand)", color: "white", borderRadius: "var(--dk-radius-pill)" }}><Plus size={16} className="mr-1" /> Log Waste</Button>
+        </div>
       </div>
       {error && <div className="p-3 rounded-xl text-sm" style={{ background: "var(--dk-danger-bg)", color: "var(--dk-danger)" }}>{error}</div>}
 

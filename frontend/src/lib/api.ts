@@ -162,3 +162,87 @@ export const chatWithCopilot = (message: string, page_context?: string) =>
     method: "POST",
     body: JSON.stringify({ message, page_context }),
   });
+
+// ── Classify ──────────────────────────────────────────────────────────────────
+export type ClassifyResult = { waste_type: string; diversion_method: string; confidence: string; reasoning: string };
+export const classifyWaste = (description: string) =>
+  fetchJson<ClassifyResult>("/api/v1/waste/classify", { method: "POST", body: JSON.stringify({ description }) });
+
+// ── Anomalies ─────────────────────────────────────────────────────────────────
+export type AnomalyRecord = { record_id: string; site_id: string; waste_type: string; weight_kg: number; mean_kg: number; std_dev_kg: number; z_score: number; recorded_at: string };
+export const getAnomalies = (siteId?: string) =>
+  fetchJson<AnomalyRecord[]>(`/api/v1/waste/anomalies${siteId ? `?site_id=${siteId}` : ""}`);
+
+// ── Vendor ────────────────────────────────────────────────────────────────────
+export type VendorType = "hauler" | "recycler" | "processor" | "broker";
+export type Vendor = {
+  id: string; name: string; vendor_type: VendorType; service_areas: string;
+  accepted_waste_types: string; rate_per_ton: number | null;
+  contact_name: string | null; contact_email: string | null; contact_phone: string | null;
+  active: boolean; performance_score: number;
+  created_at: string; updated_at: string;
+};
+export type VendorList = { items: Vendor[]; total: number; limit: number; offset: number };
+export const listVendors = (params?: Record<string, string>) =>
+  fetchJson<VendorList>(`/api/v1/vendors/?${new URLSearchParams(params)}`);
+export const createVendor = (data: Partial<Vendor>) =>
+  fetchJson<Vendor>("/api/v1/vendors/", { method: "POST", body: JSON.stringify(data) });
+export const updateVendor = (id: string, data: Partial<Vendor>) =>
+  fetchJson<Vendor>(`/api/v1/vendors/${id}`, { method: "PUT", body: JSON.stringify(data) });
+export const deleteVendor = (id: string) =>
+  fetch(`${API_BASE}/api/v1/vendors/${id}`, { method: "DELETE" });
+
+// ── Carbon ────────────────────────────────────────────────────────────────────
+export type CarbonReport = {
+  total_co2e_kg: number; avoided_co2e_kg: number; net_co2e_kg: number;
+  by_stream: Array<{ waste_type: string; diversion_method: string; weight_kg: number; co2e_kg: number; factor: number }>;
+  scope3_classification: string;
+};
+export const getCarbonReport = (siteId?: string) =>
+  fetchJson<CarbonReport>(`/api/v1/carbon/report${siteId ? `?site_id=${siteId}` : ""}`);
+
+// ── Invoices ──────────────────────────────────────────────────────────────────
+export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
+export type Invoice = {
+  id: string; contract_id: string; period_start: string; period_end: string;
+  base_amount: number; damage_charges: number; total: number;
+  status: InvoiceStatus; due_date: string; notes: string | null;
+  created_at: string;
+};
+export type InvoiceList = { items: Invoice[]; total: number; limit: number; offset: number };
+export const listInvoices = (params?: Record<string, string>) =>
+  fetchJson<InvoiceList>(`/api/v1/invoices/?${new URLSearchParams(params)}`);
+export const createInvoice = (data: Partial<Invoice>) =>
+  fetchJson<Invoice>("/api/v1/invoices/", { method: "POST", body: JSON.stringify(data) });
+export const markInvoicePaid = (id: string) =>
+  fetchJson<Invoice>(`/api/v1/invoices/${id}/pay`, { method: "POST" });
+export const deleteInvoice = (id: string) =>
+  fetch(`${API_BASE}/api/v1/invoices/${id}`, { method: "DELETE" });
+export const generateInvoicesForContract = (contractId: string) =>
+  fetchJson<Invoice>(`/api/v1/invoices/generate/${contractId}`, { method: "POST" });
+
+// ── Hazmat ────────────────────────────────────────────────────────────────────
+export type HazmatStatus = "pending" | "manifested" | "disposed" | "verified";
+export type HazmatRecord = {
+  id: string; site_id: string; waste_type_detail: string; un_number: string;
+  hazard_class: string; quantity_kg: number; manifest_number: string | null;
+  disposal_vendor_id: string | null; status: HazmatStatus;
+  notes: string | null; recorded_at: string; created_at: string;
+};
+export type HazmatList = { items: HazmatRecord[]; total: number; limit: number; offset: number };
+export const listHazmat = (params?: Record<string, string>) =>
+  fetchJson<HazmatList>(`/api/v1/hazmat/?${new URLSearchParams(params)}`);
+export const createHazmat = (data: Partial<HazmatRecord>) =>
+  fetchJson<HazmatRecord>("/api/v1/hazmat/", { method: "POST", body: JSON.stringify(data) });
+export const updateHazmat = (id: string, data: Partial<HazmatRecord>) =>
+  fetchJson<HazmatRecord>(`/api/v1/hazmat/${id}`, { method: "PUT", body: JSON.stringify(data) });
+export const deleteHazmat = (id: string) =>
+  fetch(`${API_BASE}/api/v1/hazmat/${id}`, { method: "DELETE" });
+
+// ── CSV helpers ───────────────────────────────────────────────────────────────
+export function downloadCsv(path: string, filename: string) {
+  const a = document.createElement("a")
+  a.href = `${API_BASE}${path}`
+  a.download = filename
+  a.click()
+}

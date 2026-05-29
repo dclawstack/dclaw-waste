@@ -1,70 +1,88 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getDashboard, DashboardStats } from "@/lib/api"
-import { Truck, FileText, Trash2, MapPin, Calendar, AlertTriangle } from "lucide-react"
+import { getDashboard, getWasteSummary, DashboardStats, WasteSummary } from "@/lib/api"
+import { useToast } from "@/lib/toast"
+import { Truck, FileText, Trash2, MapPin, Calendar, AlertTriangle, Zap } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import DiversionDonut from "@/components/charts/DiversionDonut"
+import WasteBarChart from "@/components/charts/WasteBarChart"
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || ""
 
 function StatCard({ label, value, icon: Icon, accent, sub }: {
-  label: string; value: string | number; icon: React.ElementType;
-  accent?: boolean; sub?: string
+  label: string; value: string | number; icon: React.ElementType; accent?: boolean; sub?: string
 }) {
   return (
     <div className="dk-card flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <span style={{ fontSize: "var(--dk-text-sm)", color: "var(--dk-fg-2)", fontWeight: 500 }}>{label}</span>
-        <div
-          className="w-9 h-9 rounded-lg flex items-center justify-center"
-          style={{ background: accent ? "var(--dk-brand)" : "var(--dk-gray-100)" }}
-        >
+        <div className="w-9 h-9 rounded-lg flex items-center justify-center"
+          style={{ background: accent ? "var(--dk-brand)" : "var(--dk-gray-100)" }}>
           <Icon size={16} color={accent ? "white" : "var(--dk-brand)"} />
         </div>
       </div>
-      <p style={{ fontSize: "var(--dk-text-3xl)", fontWeight: 700, color: "var(--dk-fg)", lineHeight: 1 }}>
-        {value}
-      </p>
+      <p style={{ fontSize: "var(--dk-text-3xl)", fontWeight: 700, color: "var(--dk-fg)", lineHeight: 1 }}>{value}</p>
       {sub && <p style={{ fontSize: "var(--dk-text-xs)", color: "var(--dk-fg-2)" }}>{sub}</p>}
     </div>
   )
 }
 
 export default function DashboardPage() {
+  const toast = useToast()
   const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [summary, setSummary] = useState<WasteSummary | null>(null)
+  const [seeding, setSeeding] = useState(false)
   const [error, setError] = useState("")
 
-  useEffect(() => {
-    getDashboard()
-      .then(setStats)
-      .catch(() => setError("Could not load dashboard. Is the backend running?"))
-  }, [])
-
-  if (error) {
-    return (
-      <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: "var(--dk-danger-bg)", color: "var(--dk-danger)" }}>
-        <AlertTriangle size={18} />
-        <span style={{ fontSize: "var(--dk-text-sm)" }}>{error}</span>
-      </div>
-    )
+  async function load() {
+    try {
+      const [s, ws] = await Promise.all([getDashboard(), getWasteSummary()])
+      setStats(s); setSummary(ws)
+    } catch { setError("Could not load dashboard. Is the backend running?") }
   }
 
-  if (!stats) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="dk-card animate-pulse" style={{ height: 110, background: "var(--dk-gray-100)" }} />
-        ))}
-      </div>
-    )
+  useEffect(() => { load() }, [])
+
+  async function handleSeed() {
+    setSeeding(true)
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/seed/`, { method: "POST" })
+      if (!res.ok) throw new Error(await res.text())
+      const data = await res.json()
+      toast.success(`Demo data loaded: ${data.waste_records_created} waste records, ${data.contracts_created} leases`)
+      load()
+    } catch (e: any) { toast.error(e.message || "Seed failed") }
+    finally { setSeeding(false) }
   }
+
+  const barData = summary
+    ? Object.entries(summary.by_type).map(([label, value]) => ({ label, value: Number(value) }))
+    : []
+
+  const diverted = summary ? (summary.total_weight_kg * summary.diversion_rate_pct / 100) : 0
+
+  if (error) return (
+    <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: "var(--dk-danger-bg)", color: "var(--dk-danger)" }}>
+      <AlertTriangle size={18} /><span style={{ fontSize: "var(--dk-text-sm)" }}>{error}</span>
+    </div>
+  )
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="dk-eyebrow mb-1">Overview</p>
-        <h1 className="dk-h4">Dashboard</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="dk-eyebrow mb-1">Overview</p>
+          <h1 className="dk-h4">Dashboard</h1>
+        </div>
+        <Button onClick={handleSeed} disabled={seeding} variant="outline" className="gap-2 text-sm">
+          <Zap size={15} style={{ color: "var(--dk-warning)" }} />
+          {seeding ? "Loading…" : "Load Demo Data"}
+        </Button>
       </div>
 
       {/* Alerts */}
-      {(stats.expiring_soon > 0 || stats.jobs_overdue > 0) && (
+      {stats && (stats.expiring_soon > 0 || stats.jobs_overdue > 0) && (
         <div className="flex flex-col sm:flex-row gap-3">
           {stats.expiring_soon > 0 && (
             <div className="flex items-center gap-2 px-4 py-3 rounded-xl flex-1" style={{ background: "var(--dk-warning-bg)" }}>
@@ -86,14 +104,60 @@ export default function DashboardPage() {
       )}
 
       {/* Stats grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard label="Total Equipment" value={stats.total_equipment} icon={Truck} sub={`${stats.available_equipment} available`} />
-        <StatCard label="Active Leases" value={stats.active_leases} icon={FileText} accent sub={`${stats.expiring_soon} expiring soon`} />
-        <StatCard label="Total Waste (kg)" value={stats.total_waste_kg.toLocaleString()} icon={Trash2} sub={`${stats.diversion_rate_pct}% diverted`} />
-        <StatCard label="Sites" value={stats.total_sites} icon={MapPin} />
-        <StatCard label="Jobs Today" value={stats.jobs_today} icon={Calendar} sub={stats.jobs_overdue > 0 ? `${stats.jobs_overdue} overdue` : "On track"} />
-        <StatCard label="Diversion Rate" value={`${stats.diversion_rate_pct}%`} icon={Trash2} accent sub="Landfill avoided" />
-      </div>
+      {!stats ? (
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="dk-card animate-pulse" style={{ height: 110, background: "var(--dk-gray-100)" }} />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          <StatCard label="Total Equipment" value={stats.total_equipment} icon={Truck} sub={`${stats.available_equipment} available`} />
+          <StatCard label="Active Leases" value={stats.active_leases} icon={FileText} accent sub={`${stats.expiring_soon} expiring soon`} />
+          <StatCard label="Total Waste (kg)" value={stats.total_waste_kg.toLocaleString()} icon={Trash2} sub={`${stats.diversion_rate_pct}% diverted`} />
+          <StatCard label="Sites" value={stats.total_sites} icon={MapPin} />
+          <StatCard label="Jobs Today" value={stats.jobs_today} icon={Calendar} sub={stats.jobs_overdue > 0 ? `${stats.jobs_overdue} overdue` : "On track"} />
+          <StatCard label="Diversion Rate" value={`${stats.diversion_rate_pct}%`} icon={Trash2} accent sub="vs landfill" />
+        </div>
+      )}
+
+      {/* Charts */}
+      {summary && summary.total_weight_kg > 0 && (
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Diversion donut */}
+          <div className="dk-card flex flex-col gap-4">
+            <p style={{ fontWeight: 600, fontSize: "var(--dk-text-sm)", color: "var(--dk-fg)" }}>Diversion Rate</p>
+            <div className="flex items-center justify-around">
+              <DiversionDonut diverted={diverted} total={summary.total_weight_kg} size={130} />
+              <div className="space-y-2">
+                {Object.entries(summary.by_diversion).map(([method, kg]) => (
+                  <div key={method} className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ background: method === "landfill" ? "var(--dk-danger)" : "var(--dk-success)" }} />
+                    <span style={{ fontSize: "var(--dk-text-xs)", color: "var(--dk-fg-1)" }}>{method}</span>
+                    <span style={{ fontSize: "var(--dk-text-xs)", fontWeight: 600, color: "var(--dk-fg)" }}>{Number(kg).toLocaleString()} kg</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Waste by type bar */}
+          <div className="dk-card flex flex-col gap-4">
+            <p style={{ fontWeight: 600, fontSize: "var(--dk-text-sm)", color: "var(--dk-fg)" }}>Waste by Type</p>
+            <WasteBarChart data={barData} height={130} />
+          </div>
+        </div>
+      )}
+
+      {!summary || summary.total_weight_kg === 0 ? (
+        <div className="dk-card text-center py-12">
+          <Trash2 size={32} className="mx-auto mb-3" style={{ color: "var(--dk-gray-300)" }} />
+          <p style={{ fontWeight: 600, fontSize: "var(--dk-text-sm)", color: "var(--dk-fg)" }}>No waste data yet</p>
+          <p style={{ fontSize: "var(--dk-text-sm)", color: "var(--dk-fg-2)", marginTop: 4 }}>
+            Click <strong>Load Demo Data</strong> to see charts instantly, or go to Waste Log to start tracking.
+          </p>
+        </div>
+      ) : null}
     </div>
   )
 }
