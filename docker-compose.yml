@@ -41,12 +41,13 @@ services:
         NEXT_PUBLIC_API_URL: http://localhost:8142
     environment:
       PORT: 3056
+      HOSTNAME: "0.0.0.0"
     ports:
       - "3056:3056"
     depends_on:
       - backend
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3056/"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3056/"]
       interval: 30s
       timeout: 5s
       retries: 3
