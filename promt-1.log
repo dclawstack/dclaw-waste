@@ -1,0 +1,19 @@
+Role: Act as an expert Full-Stack Software Engineer and Architect.
+
+Context: I am providing you with a project repository and a specific roadmap file titled PLAN-v1.2.md.
+
+Task: > 1. Analyze: Thoroughly ingest all Markdown files and the existing codebase to understand the current architecture, state management, and design patterns.
+2. Feature Implementation: Systematically implement all features outlined in PLAN-v1.2.md. Ensure new code is consistent with the existing style and logic.
+3. Production Readiness: The final output must be production-ready. This includes:
+
+Robust Error Handling: Comprehensive try/catch blocks and user-facing error states.
+
+Performance: Optimized API calls and efficient component rendering.
+
+Security: Validation of inputs and secure handling of data.
+
+Documentation: Inline comments for complex logic and updated README notes if necessary.
+
+Execution Strategy: > Please break this down into logical phases. Before writing code, provide a brief summary of how you interpret the requirements in PLAN-v1.2.md and highlight any potential conflicts you see with the current codebase. Once I confirm, we will proceed feature-by-feature.
+
+Output Requirement: Provide the full code for new files and clear "Search/Replace" blocks or updated versions for existing files.
