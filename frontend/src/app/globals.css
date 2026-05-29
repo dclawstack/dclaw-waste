@@ -1,59 +1,384 @@
+/* Google Fonts — Poppins (matches colors_and_type.css local @font-face declarations) */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   DKube Design System Tokens — embedded from colors_and_type.css
+   Light mode only. No dark mode.
+   ============================================================ */
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* ── Brand scale ────────────────────────────────────────── */
+    --dk-purple-900: #4A3878;
+    --dk-purple-800: #5C4A8E;
+    --dk-purple-700: #7660A8;
+    --dk-purple-600: #8773B5;
+    --dk-purple-500: #9384BD;
+    --dk-purple-400: #B0A4CE;
+    --dk-purple-300: #C9C0DE;
+    --dk-purple-200: #E2DCEE;
+    --dk-purple-100: #F1EEF8;
+    --dk-purple-50:  #F8F6FB;
+
+    /* ── Neutral scale ──────────────────────────────────────── */
+    --dk-ink:      #0F0F12;
+    --dk-gray-900: #1A1A20;
+    --dk-gray-800: #2B2B33;
+    --dk-gray-700: #404049;
+    --dk-gray-600: #5A5A66;
+    --dk-gray-500: #7A7A85;
+    --dk-gray-400: #A3A3AC;
+    --dk-gray-300: #D6D6D6;
+    --dk-gray-200: #E8E8EC;
+    --dk-gray-100: #F2F2F4;
+    --dk-gray-50:  #F8F8FA;
+    --dk-white:    #FFFFFF;
+
+    /* ── Semantic status ────────────────────────────────────── */
+    --dk-success:    #2E8B57;
+    --dk-success-bg: #E6F4EC;
+    --dk-warning:    #C28A00;
+    --dk-warning-bg: #FBF1DC;
+    --dk-danger:     #B3261E;
+    --dk-danger-bg:  #FBE9E7;
+    --dk-info:       #2C6CB0;
+    --dk-info-bg:    #E5EFF9;
+
+    /* ── Semantic surface tokens ────────────────────────────── */
+    --dk-bg:          var(--dk-white);
+    --dk-bg-muted:    var(--dk-gray-50);
+    --dk-bg-tint:     var(--dk-purple-50);
+    --dk-bg-inverse:  var(--dk-ink);
+
+    --dk-fg:          var(--dk-ink);
+    --dk-fg-1:        var(--dk-gray-700);
+    --dk-fg-2:        var(--dk-gray-500);
+    --dk-fg-muted:    var(--dk-gray-400);
+    --dk-fg-on-brand: var(--dk-white);
+    --dk-fg-inverse:  var(--dk-white);
+
+    --dk-brand:        var(--dk-purple-700);
+    --dk-brand-hover:  var(--dk-purple-800);
+    --dk-brand-press:  var(--dk-purple-900);
+    --dk-brand-soft:   var(--dk-purple-100);
+
+    --dk-border:        var(--dk-gray-200);
+    --dk-border-strong: var(--dk-gray-300);
+    --dk-border-brand:  var(--dk-purple-300);
+
+    /* ── Typography ─────────────────────────────────────────── */
+    --dk-font-sans:    'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --dk-font-display: 'Poppins', system-ui, -apple-system, sans-serif;
+    --dk-font-mono:    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    --dk-text-xs:  12px;
+    --dk-text-sm:  14px;
+    --dk-text-md:  16px;
+    --dk-text-lg:  18px;
+    --dk-text-xl:  20px;
+    --dk-text-2xl: 24px;
+    --dk-text-3xl: 32px;
+    --dk-text-4xl: 40px;
+    --dk-text-5xl: 56px;
+    --dk-text-6xl: 72px;
+    --dk-text-7xl: 96px;
+
+    --dk-lh-tight:   1.05;
+    --dk-lh-snug:    1.15;
+    --dk-lh-normal:  1.5;
+    --dk-lh-relaxed: 1.65;
+
+    --dk-tracking-tight: -0.025em;
+    --dk-tracking-snug:  -0.015em;
+    --dk-tracking-wide:   0.04em;
+
+    --dk-weight-regular:  400;
+    --dk-weight-medium:   500;
+    --dk-weight-semibold: 600;
+    --dk-weight-bold:     700;
+    --dk-weight-black:    800;
+
+    /* ── Spacing (4px base) ─────────────────────────────────── */
+    --dk-space-1:  4px;
+    --dk-space-2:  8px;
+    --dk-space-3:  12px;
+    --dk-space-4:  16px;
+    --dk-space-5:  20px;
+    --dk-space-6:  24px;
+    --dk-space-8:  32px;
+    --dk-space-10: 40px;
+    --dk-space-12: 48px;
+    --dk-space-16: 64px;
+    --dk-space-20: 80px;
+    --dk-space-24: 96px;
+    --dk-space-32: 128px;
+
+    /* ── Radii ──────────────────────────────────────────────── */
+    --dk-radius-xs:  4px;
+    --dk-radius-sm:  8px;
+    --dk-radius-md:  12px;
+    --dk-radius-lg:  16px;
+    --dk-radius-xl:  24px;
+    --dk-radius-2xl: 32px;
+    --dk-radius-pill: 999px;
+
+    /* ── Elevation ──────────────────────────────────────────── */
+    --dk-shadow-xs:    0 1px 2px rgba(15, 15, 18, 0.04);
+    --dk-shadow-sm:    0 2px 6px rgba(15, 15, 18, 0.06);
+    --dk-shadow-md:    0 8px 20px rgba(15, 15, 18, 0.08);
+    --dk-shadow-lg:    0 18px 40px rgba(15, 15, 18, 0.10);
+    --dk-shadow-brand: 0 12px 28px rgba(118, 96, 168, 0.28);
+
+    /* ── Motion ─────────────────────────────────────────────── */
+    --dk-ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+    --dk-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --dk-dur-fast:    150ms;
+    --dk-dur-base:    240ms;
+    --dk-dur-slow:    420ms;
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    --dk-container-max: 1280px;
+    --dk-container-pad: 24px;
+
+    /* ── shadcn/ui semantic tokens mapped to DKube ──────────── */
+    /* HSL values derived from DKube hex tokens above           */
+    --background: 0 0% 100%;              /* --dk-white        */
+    --foreground: 240 9% 7%;              /* --dk-ink          */
+
+    --card: 0 0% 100%;                    /* --dk-white        */
+    --card-foreground: 240 9% 7%;         /* --dk-ink          */
+
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --popover-foreground: 240 9% 7%;
+
+    --primary: 258 29% 52%;               /* --dk-purple-700   */
+    --primary-foreground: 0 0% 100%;      /* white             */
+
+    --secondary: 258 43% 95%;             /* --dk-purple-100   */
+    --secondary-foreground: 258 29% 52%;  /* --dk-purple-700   */
+
+    --muted: 240 9% 95%;                  /* --dk-gray-100     */
+    --muted-foreground: 240 4% 50%;       /* --dk-gray-500     */
+
+    --accent: 265 38% 97%;                /* --dk-purple-50    */
+    --accent-foreground: 258 29% 52%;     /* --dk-purple-700   */
+
+    --destructive: 3 71% 41%;             /* --dk-danger       */
+    --destructive-foreground: 0 0% 100%;  /* white             */
+
+    --border: 240 9% 92%;                 /* --dk-gray-200     */
+    --input: 240 9% 92%;                  /* --dk-gray-200     */
+    --ring: 258 29% 52%;                  /* --dk-purple-700   */
+
+    --radius: 12px;                       /* --dk-radius-md    */
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: var(--dk-font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--dk-font-sans);
+    font-size: var(--dk-text-md);
+    line-height: var(--dk-lh-relaxed);
+    color: var(--dk-fg-1);
+    background-color: var(--dk-bg-muted);
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+/* ============================================================
+   Semantic type classes — drop-in from colors_and_type.css
+   ============================================================ */
+
+.dk-eyebrow {
+  font-family: var(--dk-font-sans);
+  font-size: var(--dk-text-sm);
+  font-weight: var(--dk-weight-semibold);
+  letter-spacing: var(--dk-tracking-wide);
+  text-transform: uppercase;
+  color: var(--dk-brand);
+}
+
+.dk-h1 {
+  font-family: var(--dk-font-display);
+  font-size: clamp(48px, 7vw, var(--dk-text-7xl));
+  font-weight: var(--dk-weight-bold);
+  line-height: var(--dk-lh-tight);
+  letter-spacing: var(--dk-tracking-tight);
+  color: var(--dk-fg);
+}
+
+.dk-h2 {
+  font-family: var(--dk-font-display);
+  font-size: clamp(32px, 4.4vw, var(--dk-text-5xl));
+  font-weight: var(--dk-weight-bold);
+  line-height: var(--dk-lh-snug);
+  letter-spacing: var(--dk-tracking-snug);
+  color: var(--dk-fg);
+}
+
+.dk-h3 {
+  font-family: var(--dk-font-display);
+  font-size: var(--dk-text-3xl);
+  font-weight: var(--dk-weight-bold);
+  line-height: var(--dk-lh-snug);
+  letter-spacing: var(--dk-tracking-snug);
+  color: var(--dk-fg);
+}
+
+.dk-h4 {
+  font-family: var(--dk-font-sans);
+  font-size: var(--dk-text-2xl);
+  font-weight: var(--dk-weight-semibold);
+  line-height: var(--dk-lh-snug);
+  color: var(--dk-fg);
+}
+
+.dk-h5 {
+  font-family: var(--dk-font-sans);
+  font-size: var(--dk-text-xl);
+  font-weight: var(--dk-weight-semibold);
+  line-height: var(--dk-lh-snug);
+  color: var(--dk-fg);
+}
+
+.dk-lead {
+  font-family: var(--dk-font-sans);
+  font-size: var(--dk-text-xl);
+  font-weight: var(--dk-weight-regular);
+  line-height: var(--dk-lh-relaxed);
+  color: var(--dk-fg-1);
+}
+
+.dk-body {
+  font-family: var(--dk-font-sans);
+  font-size: var(--dk-text-md);
+  font-weight: var(--dk-weight-regular);
+  line-height: var(--dk-lh-relaxed);
+  color: var(--dk-fg-1);
+}
+
+.dk-meta {
+  font-family: var(--dk-font-sans);
+  font-size: var(--dk-text-sm);
+  font-weight: var(--dk-weight-medium);
+  line-height: var(--dk-lh-normal);
+  color: var(--dk-fg-2);
+}
+
+.dk-caption {
+  font-family: var(--dk-font-sans);
+  font-size: var(--dk-text-xs);
+  font-weight: var(--dk-weight-medium);
+  line-height: var(--dk-lh-normal);
+  color: var(--dk-fg-2);
+  letter-spacing: 0.02em;
+}
+
+.dk-code {
+  font-family: var(--dk-font-mono);
+  font-size: 0.92em;
+  background: var(--dk-bg-muted);
+  border: 1px solid var(--dk-border);
+  border-radius: var(--dk-radius-xs);
+  padding: 0.1em 0.35em;
+  color: var(--dk-fg);
+}
+
+/* ── Card / surface helpers ─────────────────────────────────── */
+
+.dk-card {
+  background: var(--dk-white);
+  border: 1px solid var(--dk-border);
+  border-radius: var(--dk-radius-lg);
+  box-shadow: var(--dk-shadow-sm);
+  padding: var(--dk-space-6);
+}
+
+.dk-card:hover {
+  box-shadow: var(--dk-shadow-md);
+  transition: box-shadow var(--dk-dur-base) var(--dk-ease-out);
+}
+
+/* ── Button base ────────────────────────────────────────────── */
+
+.dk-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dk-space-2);
+  padding: 10px var(--dk-space-6);
+  font-family: var(--dk-font-sans);
+  font-size: var(--dk-text-sm);
+  font-weight: var(--dk-weight-semibold);
+  line-height: 1;
+  color: var(--dk-fg-on-brand);
+  background: var(--dk-brand);
+  border: none;
+  border-radius: var(--dk-radius-pill);
+  box-shadow: var(--dk-shadow-brand);
+  cursor: pointer;
+  transition: background var(--dk-dur-fast) var(--dk-ease-out),
+              box-shadow var(--dk-dur-fast) var(--dk-ease-out);
+}
+
+.dk-btn-primary:hover  { background: var(--dk-brand-hover); }
+.dk-btn-primary:active { background: var(--dk-brand-press); box-shadow: none; }
+
+.dk-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dk-space-2);
+  padding: 10px var(--dk-space-5);
+  font-family: var(--dk-font-sans);
+  font-size: var(--dk-text-sm);
+  font-weight: var(--dk-weight-medium);
+  color: var(--dk-brand);
+  background: transparent;
+  border: 1.5px solid var(--dk-border-brand);
+  border-radius: var(--dk-radius-pill);
+  cursor: pointer;
+  transition: background var(--dk-dur-fast) var(--dk-ease-out);
+}
+
+.dk-btn-ghost:hover { background: var(--dk-brand-soft); }
+
+/* ── Status badge helpers ───────────────────────────────────── */
+
+.dk-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-family: var(--dk-font-sans);
+  font-size: var(--dk-text-xs);
+  font-weight: var(--dk-weight-semibold);
+  border-radius: var(--dk-radius-pill);
+}
+
+.dk-badge-success { background: var(--dk-success-bg); color: var(--dk-success); }
+.dk-badge-warning { background: var(--dk-warning-bg); color: var(--dk-warning); }
+.dk-badge-danger  { background: var(--dk-danger-bg);  color: var(--dk-danger);  }
+.dk-badge-info    { background: var(--dk-info-bg);    color: var(--dk-info);    }
+.dk-badge-brand   { background: var(--dk-brand-soft); color: var(--dk-brand);   }
+.dk-badge-neutral { background: var(--dk-gray-100);   color: var(--dk-gray-700);}
+
+/* ── Focus ring ─────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--dk-brand);
+  outline-offset: 2px;
+  border-radius: var(--dk-radius-xs);
 }
