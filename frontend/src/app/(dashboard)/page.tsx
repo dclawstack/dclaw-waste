@@ -188,7 +188,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {(!summary || summary.total_waste_kg === 0) && !stats?.total_equipment && (
+      {(!summary || summary.total_weight_kg === 0) && !stats?.total_equipment && (
         <div className="dk-card text-center py-12">
           <Trash2 size={32} className="mx-auto mb-3" style={{ color: "var(--dk-gray-300)" }} />
           <p style={{ fontWeight: 600, fontSize: "var(--dk-text-sm)", color: "var(--dk-fg)" }}>No waste data yet</p>
