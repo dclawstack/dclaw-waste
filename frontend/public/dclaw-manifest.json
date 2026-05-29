@@ -1,0 +1,11 @@
+{
+  "app_id": "waste",
+  "app_name": "DClaw Waste",
+  "category": "Sustainability",
+  "tagline": "Waste reduction & management platform",
+  "version": "1.2.0",
+  "frontend_port": 3056,
+  "backend_port": 8142,
+  "color": "#7660A8",
+  "status": "active"
+}

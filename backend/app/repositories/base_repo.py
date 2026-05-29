@@ -1,4 +1,3 @@
-from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import TypeVar, Generic
@@ -30,7 +29,7 @@ class BaseRepository(Generic[T]):
         total = count_result.scalar() or 0
         return items, total
 
-    async def get_by_id(self, item_id: UUID) -> T | None:
+    async def get_by_id(self, item_id: str) -> T | None:
         result = await self.db.execute(
             select(self.model).where(self.model.id == item_id)
         )

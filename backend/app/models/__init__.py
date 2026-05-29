@@ -1,0 +1,15 @@
+# Import all models here so SQLAlchemy metadata and alembic autogenerate can discover them.
+from app.models.base import Base
+from app.models.equipment import Equipment, EquipmentType, EquipmentStatus
+from app.models.lease import LeaseContract, LeaseEvent, DamageAssessment, ContractStatus, BillingCycle, LeaseEventType, DamageSeverity
+from app.models.waste import Site, WasteRecord, SiteType, WasteType, DiversionMethod
+from app.models.schedule import CollectionJob, JobType, JobStatus, TimeWindow
+
+__all__ = [
+    "Base",
+    "Equipment", "EquipmentType", "EquipmentStatus",
+    "LeaseContract", "LeaseEvent", "DamageAssessment",
+    "ContractStatus", "BillingCycle", "LeaseEventType", "DamageSeverity",
+    "Site", "WasteRecord", "SiteType", "WasteType", "DiversionMethod",
+    "CollectionJob", "JobType", "JobStatus", "TimeWindow",
+]
