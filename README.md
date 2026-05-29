@@ -1,5 +1,7 @@
 # DClaw Scaffold
 
+**Author:** sureshOC
+
 > **The single source of truth for new DClaw app development.**
 > Clone this repo, rename it, fill in your `PRODUCT-SPEC.md`, and hand it to your coding agents.
 
