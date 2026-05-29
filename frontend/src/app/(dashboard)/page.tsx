@@ -7,8 +7,16 @@ import { Truck, FileText, Trash2, MapPin, Calendar, AlertTriangle, Zap } from "l
 import { Button } from "@/components/ui/button"
 import DiversionDonut from "@/components/charts/DiversionDonut"
 import WasteBarChart from "@/components/charts/WasteBarChart"
+import TrendLineChart from "@/components/charts/TrendLineChart"
+import OnboardingBanner from "@/components/onboarding/OnboardingBanner"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || ""
+
+type TrendPoint = {
+  week_label: string; week_start: string;
+  total_kg: number; diverted_kg: number;
+  diversion_rate_pct: number; co2e_saved_kg: number;
+}
 
 function StatCard({ label, value, icon: Icon, accent, sub }: {
   label: string; value: string | number; icon: React.ElementType; accent?: boolean; sub?: string
@@ -32,6 +40,7 @@ export default function DashboardPage() {
   const toast = useToast()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [summary, setSummary] = useState<WasteSummary | null>(null)
+  const [trends, setTrends] = useState<TrendPoint[]>([])
   const [seeding, setSeeding] = useState(false)
   const [error, setError] = useState("")
 
@@ -40,6 +49,11 @@ export default function DashboardPage() {
       const [s, ws] = await Promise.all([getDashboard(), getWasteSummary()])
       setStats(s); setSummary(ws)
     } catch { setError("Could not load dashboard. Is the backend running?") }
+
+    try {
+      const tr = await fetch(`${API_BASE}/api/v1/waste/trends?weeks=12`).then(r => r.json())
+      if (Array.isArray(tr)) setTrends(tr)
+    } catch { /* trends are optional */ }
   }
 
   useEffect(() => { load() }, [])
@@ -59,8 +73,13 @@ export default function DashboardPage() {
   const barData = summary
     ? Object.entries(summary.by_type).map(([label, value]) => ({ label, value: Number(value) }))
     : []
-
   const diverted = summary ? (summary.total_weight_kg * summary.diversion_rate_pct / 100) : 0
+
+  const trendLabels = trends.map(t => t.week_label)
+  const trendSeries = trends.length > 0 ? [
+    { label: "Total (kg)", values: trends.map(t => t.total_kg), color: "var(--dk-brand)" },
+    { label: "Diverted (kg)", values: trends.map(t => t.diverted_kg), color: "var(--dk-success)" },
+  ] : []
 
   if (error) return (
     <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: "var(--dk-danger-bg)", color: "var(--dk-danger)" }}>
@@ -80,6 +99,18 @@ export default function DashboardPage() {
           {seeding ? "Loading…" : "Load Demo Data"}
         </Button>
       </div>
+
+      {/* Onboarding banner — shows only when empty */}
+      {stats && stats.total_equipment === 0 && stats.total_sites === 0 && (
+        <OnboardingBanner
+          hasEquipment={stats.total_equipment > 0}
+          hasSites={stats.total_sites > 0}
+          hasLeases={stats.active_leases > 0}
+          hasWaste={stats.total_waste_kg > 0}
+          onSeed={handleSeed}
+          seeding={seeding}
+        />
+      )}
 
       {/* Alerts */}
       {stats && (stats.expiring_soon > 0 || stats.jobs_overdue > 0) && (
@@ -121,10 +152,9 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Charts */}
+      {/* Charts row */}
       {summary && summary.total_weight_kg > 0 && (
         <div className="grid md:grid-cols-2 gap-4">
-          {/* Diversion donut */}
           <div className="dk-card flex flex-col gap-4">
             <p style={{ fontWeight: 600, fontSize: "var(--dk-text-sm)", color: "var(--dk-fg)" }}>Diversion Rate</p>
             <div className="flex items-center justify-around">
@@ -140,8 +170,6 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-
-          {/* Waste by type bar */}
           <div className="dk-card flex flex-col gap-4">
             <p style={{ fontWeight: 600, fontSize: "var(--dk-text-sm)", color: "var(--dk-fg)" }}>Waste by Type</p>
             <WasteBarChart data={barData} height={130} />
@@ -149,15 +177,26 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {!summary || summary.total_weight_kg === 0 ? (
+      {/* 12-week trend chart */}
+      {trendSeries.length > 0 && trends.some(t => t.total_kg > 0) && (
+        <div className="dk-card">
+          <div className="flex items-center justify-between mb-4">
+            <p style={{ fontWeight: 600, fontSize: "var(--dk-text-sm)", color: "var(--dk-fg)" }}>12-Week Waste Trend</p>
+            <span style={{ fontSize: "var(--dk-text-xs)", color: "var(--dk-fg-2)" }}>kg per week</span>
+          </div>
+          <TrendLineChart labels={trendLabels} series={trendSeries} height={140} />
+        </div>
+      )}
+
+      {(!summary || summary.total_waste_kg === 0) && !stats?.total_equipment && (
         <div className="dk-card text-center py-12">
           <Trash2 size={32} className="mx-auto mb-3" style={{ color: "var(--dk-gray-300)" }} />
           <p style={{ fontWeight: 600, fontSize: "var(--dk-text-sm)", color: "var(--dk-fg)" }}>No waste data yet</p>
           <p style={{ fontSize: "var(--dk-text-sm)", color: "var(--dk-fg-2)", marginTop: 4 }}>
-            Click <strong>Load Demo Data</strong> to see charts instantly, or go to Waste Log to start tracking.
+            Click <strong>Load Demo Data</strong> above to see charts instantly.
           </p>
         </div>
-      ) : null}
+      )}
     </div>
   )
 }

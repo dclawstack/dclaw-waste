@@ -1,9 +1,11 @@
 import csv
 import io
 import logging
+from datetime import datetime, timedelta, date
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -70,6 +72,63 @@ async def waste_summary(
         by_diversion=by_diversion,
         diversion_rate_pct=diversion_rate,
     )
+
+
+# ── Waste trends (weekly time-series) ───────────────────────────────────────
+
+class TrendPoint(BaseModel):
+    week_label: str        # e.g. "W20"
+    week_start: str        # ISO date
+    total_kg: float
+    diverted_kg: float
+    diversion_rate_pct: float
+    co2e_saved_kg: float
+
+
+@router.get("/trends", response_model=list[TrendPoint])
+async def waste_trends(
+    weeks: int = Query(12, ge=1, le=52),
+    site_id: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.services.carbon import calculate_emission
+    from app.models.waste import WasteRecord as WR
+
+    points: list[TrendPoint] = []
+    today = date.today()
+
+    for w in range(weeks - 1, -1, -1):
+        week_start = today - timedelta(days=today.weekday()) - timedelta(weeks=w)
+        week_end = week_start + timedelta(days=6)
+        week_label = f"W{week_start.isocalendar()[1]}"
+
+        q = select(WR).where(
+            func.date(WR.recorded_at) >= week_start,
+            func.date(WR.recorded_at) <= week_end,
+        )
+        if site_id:
+            q = q.where(WR.site_id == site_id)
+        rows = list((await db.execute(q)).scalars().all())
+
+        total = sum(float(r.weight_kg) for r in rows)
+        diverted = sum(float(r.weight_kg) for r in rows if str(r.diversion_method) != "landfill")
+        co2e_saved = sum(
+            abs(calculate_emission(str(r.waste_type), str(r.diversion_method), float(r.weight_kg)).co2e_kg)
+            for r in rows
+            if calculate_emission(str(r.waste_type), str(r.diversion_method), float(r.weight_kg)).co2e_kg < 0
+        )
+        diversion_rate = round(diverted / total * 100, 1) if total > 0 else 0.0
+
+        points.append(TrendPoint(
+            week_label=week_label,
+            week_start=week_start.isoformat(),
+            total_kg=round(total, 1),
+            diverted_kg=round(diverted, 1),
+            diversion_rate_pct=diversion_rate,
+            co2e_saved_kg=round(co2e_saved, 2),
+        ))
+
+    return points
 
 
 @router.get("/{record_id}", response_model=WasteRecordRead)

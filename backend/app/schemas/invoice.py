@@ -39,6 +39,8 @@ class InvoiceRead(BaseModel):
     status: InvoiceStatus
     due_date: date
     notes: str | None
+    payment_url: str | None
+    stripe_session_id: str | None
     created_at: datetime
 
 

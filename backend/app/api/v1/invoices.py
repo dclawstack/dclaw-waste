@@ -120,3 +120,54 @@ async def delete_invoice(invoice_id: str, db: AsyncSession = Depends(get_db)):
     inv = await _get_or_404(invoice_id, db)
     await db.delete(inv)
     await db.commit()
+
+
+# ── Stripe payment link ───────────────────────────────────────────────────────
+
+class PaymentLinkResponse(BaseModel):
+    payment_url: str
+    invoice_id: str
+    is_demo: bool
+
+
+@router.post("/{invoice_id}/payment-link", response_model=PaymentLinkResponse)
+async def create_payment_link(invoice_id: str, db: AsyncSession = Depends(get_db)):
+    from app.core.config import settings
+    inv = await _get_or_404(invoice_id, db)
+
+    is_demo = True
+    if settings.stripe_api_key:
+        try:
+            import httpx
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    "https://api.stripe.com/v1/checkout/sessions",
+                    auth=(settings.stripe_api_key, ""),
+                    data={
+                        "mode": "payment",
+                        "line_items[0][price_data][currency]": "usd",
+                        "line_items[0][price_data][unit_amount]": str(int(float(inv.total) * 100)),
+                        "line_items[0][price_data][product_data][name]": f"Invoice {invoice_id[:8]} — Waste Lease",
+                        "line_items[0][quantity]": "1",
+                        "success_url": settings.stripe_success_url,
+                        "cancel_url": settings.stripe_cancel_url,
+                    },
+                )
+                if resp.status_code == 200:
+                    session = resp.json()
+                    payment_url = session["url"]
+                    inv.stripe_session_id = session["id"]
+                    inv.payment_url = payment_url
+                    inv.status = InvoiceStatus.sent
+                    await db.commit()
+                    is_demo = False
+                    return PaymentLinkResponse(payment_url=payment_url, invoice_id=invoice_id, is_demo=False)
+        except Exception as e:
+            logger.warning("Stripe call failed: %s", e)
+
+    # Demo / fallback payment link
+    demo_url = f"https://buy.stripe.com/demo?invoice={invoice_id}&amount={inv.total}"
+    inv.payment_url = demo_url
+    inv.status = InvoiceStatus.sent
+    await db.commit()
+    return PaymentLinkResponse(payment_url=demo_url, invoice_id=invoice_id, is_demo=True)

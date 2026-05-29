@@ -7,6 +7,7 @@ from app.models.schedule import CollectionJob, JobType, JobStatus, TimeWindow
 from app.models.vendor import Vendor, VendorType
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.hazmat import HazmatRecord, HazmatStatus
+from app.models.user import User, UserRole
 
 __all__ = [
     "Base",
@@ -18,4 +19,5 @@ __all__ = [
     "Vendor", "VendorType",
     "Invoice", "InvoiceStatus",
     "HazmatRecord", "HazmatStatus",
+    "User", "UserRole",
 ]

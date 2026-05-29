@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react"
 import { listInvoices, markInvoicePaid, deleteInvoice, generateInvoicesForContract, listLeases, Invoice, InvoiceStatus, LeaseContract } from "@/lib/api"
 import { useToast } from "@/lib/toast"
-import { Plus, Receipt, CheckCircle } from "lucide-react"
+import { Plus, Receipt, CheckCircle, ExternalLink } from "lucide-react"
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || ""
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
@@ -38,6 +40,18 @@ export default function InvoicesPage() {
   async function handlePay(id: string) {
     try { await markInvoicePaid(id); toast.success("Invoice marked as paid"); load() }
     catch (e: any) { toast.error(e.message) }
+  }
+
+  async function handlePaymentLink(id: string) {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/invoices/${id}/payment-link`, { method: "POST" })
+      if (!res.ok) throw new Error(await res.text())
+      const data = await res.json()
+      window.open(data.payment_url, "_blank")
+      if (data.is_demo) toast.warning("Demo payment link — configure STRIPE_API_KEY for real payments")
+      else toast.success("Payment link opened")
+      load()
+    } catch (e: any) { toast.error(e.message) }
   }
 
   async function handleDelete(id: string) {
@@ -111,9 +125,14 @@ export default function InvoicesPage() {
                       <td className="px-4 py-3">
                         <div className="flex gap-1">
                           {inv.status !== "paid" && (
-                            <button onClick={() => handlePay(inv.id)} className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg" style={{ color: "var(--dk-success)", background: "var(--dk-success-bg)" }}>
-                              <CheckCircle size={11} /> Pay
-                            </button>
+                            <>
+                              <button onClick={() => handlePaymentLink(inv.id)} className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg" style={{ color: "var(--dk-brand)", background: "var(--dk-brand-soft)" }}>
+                                <ExternalLink size={11} /> Pay
+                              </button>
+                              <button onClick={() => handlePay(inv.id)} className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg" style={{ color: "var(--dk-success)", background: "var(--dk-success-bg)" }}>
+                                <CheckCircle size={11} /> Mark
+                              </button>
+                            </>
                           )}
                           <button onClick={() => handleDelete(inv.id)} className="text-xs px-2 py-1 rounded-lg" style={{ color: "var(--dk-danger)", background: "var(--dk-danger-bg)" }}>Del</button>
                         </div>
